@@ -25,16 +25,14 @@ def parse_val():
     return data
 
 
-# парсит инфу с MYFIN
-def parse_cval():
-    url = 'https://myfin.by/crypto-rates'
+# парсит инфу с BINANCE.COM
+def parse_cval(x):
+    url = f'https://www.binance.com/ru/price/{x}'
     r = get(url, headers=config.HEADERS)
     soup = BeautifulSoup(r.text, 'lxml')
-    data = soup.find('tbody', class_='table-body').text.replace('\n', ' ').replace('\xa0  ', '; ').replace('$',
-                                                                                                           '$ ').replace(
-        '  ', ' ').split()
-
-    return data
+    price = soup.find('div', class_='css-12ujz79').text
+    percent = soup.find('div', class_='css-4j2do9').text
+    return price, percent
 
 
 # строит основную клаву
@@ -64,7 +62,7 @@ def general(message):
         btc = types.KeyboardButton('₿ Bitcoin')
         eth = types.KeyboardButton('🇪 Ethereum')
         doge = types.KeyboardButton('🐶 Dogecoin')
-        usdt = types.KeyboardButton('💲 Tether')
+        usdt = types.KeyboardButton('✈ Toncoin')
         back = types.KeyboardButton('Назад')
         cvl_keyboard.add(btc, eth, doge, usdt, back)
         bot.send_message(message.chat.id, 'Выберите криптовалюту', reply_markup=cvl_keyboard)
@@ -72,28 +70,28 @@ def general(message):
 
 # отвечает курсом на крипту
 @bot.message_handler(func=lambda
-        x: x.text == '₿ Bitcoin' or x.text == '🇪 Ethereum' or x.text == '🐶 Dogecoin' or x.text == '💲 Tether' or x.text == 'Назад')
-def cvl(message):
+        x: x.text == '₿ Bitcoin' or x.text == '🇪 Ethereum' or x.text == '🐶 Dogecoin' or x.text == '✈ Toncoin' or x.text == 'Назад')
+def cval(message):
     if message.text == 'Назад':
         start(message)
     elif message.text == '₿ Bitcoin':
-        data = parse_cval()
-        bot.send_message(message.chat.id, f'1 Bitcoin = <b>{data[12]}</b>\n({data[20][:-1]})', parse_mode='HTML')
+        data = parse_cval('bitcoin')
+        bot.send_message(message.chat.id, f'1 Bitcoin = <b>{data[0][2:]} $</b>\n{data[1]} (1 дн.)', parse_mode='HTML')
     elif message.text == '🇪 Ethereum':
-        data = parse_cval()
-        bot.send_message(message.chat.id, f'1 Ethereum = <b>{data[2]}</b>\n({data[10][:-1]})', parse_mode='HTML')
+        data = parse_cval('ethereum')
+        bot.send_message(message.chat.id, f'1 Ethereum = <b>{data[0][2:]} $</b>\n{data[1]} (1 дн.)', parse_mode='HTML')
     elif message.text == '🐶 Dogecoin':
-        data = parse_cval()
-        bot.send_message(message.chat.id, f'1 Dogecoin = <b>{data[42]}</b>\n({data[50][:-1]})', parse_mode='HTML')
-    elif message.text == '💲 Tether':
-        data = parse_cval()
-        bot.send_message(message.chat.id, f'1 Tether = <b>{data[22]}</b>\n({data[30][:-1]})', parse_mode='HTML')
+        data = parse_cval('dogecoin')
+        bot.send_message(message.chat.id, f'1 Dogecoin = <b>{data[0][2:]} $</b>\n{data[1]} (1 дн.)', parse_mode='HTML')
+    elif message.text == '✈ Toncoin':
+        data = parse_cval('toncoin')
+        bot.send_message(message.chat.id, f'1 Toncoin = <b>{data[0][2:]} $</b>\n{data[1]} (1 дн.)', parse_mode='HTML')
 
 
 # отвечает курсом на валюту
 @bot.message_handler(func=lambda
         x: x.text == '🇪🇺 Евро' or x.text == '🇺🇸 Доллар США' or x.text == '🇺🇦 Гривна' or x.text == '🇹🇷 Лира' or x.text == 'Назад')
-def cvl(message):
+def val(message):
     if message.text == 'Назад':
         start(message)
     elif message.text == '🇪🇺 Евро':
